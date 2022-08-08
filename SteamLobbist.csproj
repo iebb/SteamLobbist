@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	  <TargetFramework>net5.0-windows</TargetFramework>
-	  <Nullable>enable</Nullable>
+	  <TargetFramework>net48</TargetFramework>
 	  <UseWindowsForms>true</UseWindowsForms>
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	  <Platforms>x64</Platforms>
@@ -38,11 +37,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Steamworks.NET.Standard.Windows.x64" Version="15.0.1.4" />
+    <Folder Include="Properties\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <PackageReference Include="Facepunch.Steamworks" Version="2.3.3" />
   </ItemGroup>
 
 </Project>

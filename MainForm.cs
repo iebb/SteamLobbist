@@ -9,7 +9,6 @@ using System.Threading;
 using System.Windows.Forms;
 using Steamworks;
 
-
 namespace SteamLobbist
 {
     
@@ -20,72 +19,87 @@ namespace SteamLobbist
         bool isJoining = false;
         string targetSteamId = "";
         ClientWebSocket webSocket = new ClientWebSocket();
+        ImageList imageList = new ImageList();
         int sequenceid = 0;
         bool finalized = true;
         public MainForm()
         {
 
-            Environment.SetEnvironmentVariable("SteamAppId", "480");
-            Environment.SetEnvironmentVariable("SteamOverlayGameId", "480");
-            Environment.SetEnvironmentVariable("SteamGameId", "480");
-            SteamAPI.Init();
+            imageList.ImageSize = new Size(48, 48);
+            imageList.ColorDepth = ColorDepth.Depth32Bit;
+
+            SteamClient.Init(480);
+
             webSocket.Options.SetRequestHeader("Origin", "https://steamcommunity.com");
             webSocket.ConnectAsync(new Uri("ws://127.0.0.1:27060/clientsocket/"), CancellationToken.None);
             InitializeComponent();
         }
+
+        async void LoadAvatarForFriend(Steamworks.Friend friend)
+        {
+            var img_ = await friend.GetMediumAvatarAsync();
+            if (img_ != null)
+            {
+                Steamworks.Data.Image img = (Steamworks.Data.Image)img_;
+                int bufferSize = (int)(img.Width * img.Height * 4);
+                byte[] avatarARGB = new byte[bufferSize];
+
+                for (int j = 0; j < bufferSize; j += 4)
+                {
+                    avatarARGB[j + 0] = img.Data[j + 2];
+                    avatarARGB[j + 1] = img.Data[j + 1];
+                    avatarARGB[j + 2] = img.Data[j + 0];
+                }
+
+                Bitmap avatar = new Bitmap((int)img.Width, (int)img.Height, PixelFormat.Format32bppRgb);
+                Rectangle BoundsRect = new Rectangle(0, 0, (int)img.Width, (int)img.Height);
+                BitmapData bmpData = avatar.LockBits(BoundsRect, ImageLockMode.WriteOnly, avatar.PixelFormat);
+
+                IntPtr ptr = bmpData.Scan0;
+                Marshal.Copy(avatarARGB, 0, ptr, (int)img.Width * (int)img.Height * 4);
+                avatar.UnlockBits(bmpData);
+                imageList.Images.Add(friend.Id.ToString(), avatar);
+            }
+
+        }
+
+
         void LoadFriends()
         {
-            ImageList imageList = new ImageList();
-            imageList.ImageSize = new Size(48, 48);
-            imageList.ColorDepth = ColorDepth.Depth32Bit;
 
             listView1.LargeImageList = imageList;
             listView1.Items.Clear();
             steamIdList.Clear();
 
-            var friendCount = SteamFriends.GetFriendCount(EFriendFlags.k_EFriendFlagImmediate);
+            var friends = SteamFriends.GetFriends();
 
-            for (int idx = 0; idx < friendCount; idx++)
+            foreach (var friend in friends)
             {
-                var m_Friend = SteamFriends.GetFriendByIndex(idx, EFriendFlags.k_EFriendFlagImmediate);
-                string personaName = SteamFriends.GetFriendPersonaName(m_Friend);
-                EPersonaState personaState = SteamFriends.GetFriendPersonaState(m_Friend);
-                int avatarId = SteamFriends.GetLargeFriendAvatar(m_Friend);
-                SteamFriends.GetFriendGamePlayed(m_Friend, out FriendGameInfo_t gameInfo);
-                if (gameInfo.m_gameID.m_GameID == 730) {
-                    if (avatarId != -1)
-                    {
-                        SteamUtils.GetImageSize(avatarId, out uint avatarW, out uint avatarH);
-                        int bufferSize = (int)(avatarW * avatarH * 4);
-                        byte[] avatarARGB = new byte[bufferSize];
-                        SteamUtils.GetImageRGBA(avatarId, avatarARGB, bufferSize);
+                string personaName = friend.Name;
+                var personaState = friend.State;
+                //int avatarId = friend.GetLargeAvatarAsync();
+                // FriendGameInfo gameInfo = friend.GameInfo;
 
-                        for (int j = 0; j < bufferSize; j += 4)
-                        {
-                            avatarARGB[j + 0] ^= avatarARGB[j + 2];
-                            avatarARGB[j + 2] ^= avatarARGB[j + 0];
-                            avatarARGB[j + 0] ^= avatarARGB[j + 2];
-                        }
-
-                        Bitmap avatar = new Bitmap((int)avatarW, (int)avatarH, PixelFormat.Format32bppRgb);
-                        Rectangle BoundsRect = new Rectangle(0, 0, (int)avatarW, (int)avatarH);
-                        BitmapData bmpData = avatar.LockBits(BoundsRect, ImageLockMode.WriteOnly, avatar.PixelFormat);
-
-                        IntPtr ptr = bmpData.Scan0;
-                        Marshal.Copy(avatarARGB, 0, ptr, (int)avatarW * (int)avatarH * 4);
-                        avatar.UnlockBits(bmpData);
-                        imageList.Images.Add(m_Friend.ToString(), avatar);
-
-                        // var personaState = SteamFriends.GetFriendRichPresence(m_Friend, "status");
-                        Console.WriteLine(personaState);
-                        listView1.Items.Add(new ListViewItem(personaName, m_Friend.ToString()));
-                    }
-                    else
-                    {
-                        listView1.Items.Add(new ListViewItem(personaName));
-                    }
-                    steamIdList.Add(m_Friend.ToString());
+                if (!imageList.Images.ContainsKey(friend.Id.ToString()))
+                {
+                    LoadAvatarForFriend(friend);
                 }
+                listView1.Items.Add(new ListViewItem(personaName, friend.Id.ToString()));
+
+
+                /*
+                if (avatarId != -1)
+                {
+                   
+                }
+                else
+                {
+                    listView1.Items.Add(new ListViewItem(personaName));
+                }
+                if (gameInfo.GameID == 730) {
+                   
+                    steamIdList.Add(friend.Id.ToString());
+                }*/
             }
         }
 
@@ -126,14 +140,14 @@ namespace SteamLobbist
             sequenceid += 1;
             string s = String.Format("{{\"friend_id\":\"{0}\",\"sequenceid\":{1},\"universe\":1,\"message\":\"ShowJoinGameDialog\"}}", targetSteamId, sequenceid);
             byte[] b = Encoding.ASCII.GetBytes(s);
-            await webSocket.SendAsync(b, WebSocketMessageType.Text, true, CancellationToken.None);
+            await webSocket.SendAsync(new ArraySegment<byte>(b), WebSocketMessageType.Text, true, CancellationToken.None);
             var buffer = new byte[1024];
             var resultStr = "";
             WebSocketReceiveResult result;
 
             do
             {
-                result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
                 resultStr += Encoding.ASCII.GetString(buffer, 0, result.Count).Replace("\n", "");
             }
             while (!result.EndOfMessage);
