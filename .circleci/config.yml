@@ -8,7 +8,7 @@ executors:
       - image: mcr.microsoft.com/dotnet/sdk:latest
   go:
     docker:
-      - image: cimg/go
+      - image: cimg/go:1.18.0
 
 
 jobs:
