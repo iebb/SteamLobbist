@@ -18,11 +18,13 @@ jobs:
       - checkout
       - run: |
           VERSION=${CIRCLE_TAG:=$(git tag).$(date '+%m%d')}
+          echo $VERSION > artifacts/version.txt
           dotnet publish -c Release -o artifacts --no-self-contained -p:PublishSingleFile=true /p:AssemblyVersion=${VERSION:=0.0.1}
       - persist_to_workspace:
           root: ./artifacts
           paths:
             - ./SteamLobbist.exe
+            - ./version.txt
   upload-github:
     executor: go
     steps:
@@ -30,8 +32,8 @@ jobs:
           at: ./artifacts
       - run: |
           go get github.com/tcnksm/ghr
-          VERSION=${CIRCLE_TAG:=$(git tag).$(date '+%m%d')}
-          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+          VERSION=$(cat artifacts/version.txt)
+          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/SteamLobbist.exe
       - store_artifacts:
           path: ./artifacts
 
