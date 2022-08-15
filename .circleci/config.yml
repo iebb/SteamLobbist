@@ -18,14 +18,13 @@ jobs:
       - checkout
       - run: |
           VERSION=${CIRCLE_TAG:=$(git tag).$(date '+%m%d')}
-          mkdir artifacts
-          echo $VERSION > artifacts/version.txt
-          dotnet publish -c Release -o artifacts --no-self-contained -p:PublishSingleFile=true /p:AssemblyVersion=${VERSION:=0.0.1}
+          mkdir releases
+          echo $VERSION > releases/version.txt
+          dotnet publish -c Release -o ./releases --no-self-contained -p:PublishSingleFile=true /p:AssemblyVersion=${VERSION:=0.0.1}
       - persist_to_workspace:
-          root: ./artifacts
+          root: .
           paths:
-            - ./SteamLobbist.exe
-            - ./version.txt
+            - ./releases
   upload-github:
     executor: go
     steps:
@@ -34,12 +33,15 @@ jobs:
       - run: |
           go get github.com/tcnksm/ghr
           VERSION=$(cat artifacts/version.txt)
-          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/SteamLobbist.exe
+          ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/releases
       - store_artifacts:
-          path: ./artifacts
+          path: ./artifacts/releases
 
 workflows:
   build-and-push:
     jobs:
       - build-singlepackage
-      - upload-github
+      - upload-github:
+          requires:
+            - build-singlepackage
+
