@@ -31,13 +31,14 @@ namespace SteamLobbist
             InitializeComponent();
 
             Process[] pname = Process.GetProcessesByName("csgo");
-            if (pname.Length == 0)
+            while (pname.Length == 0)
             {
                 var psi = new ProcessStartInfo();
                 psi.UseShellExecute = true;
                 psi.FileName = "steam://rungameid/730";
                 Process.Start(psi);
                 MessageBox.Show("请等待游戏启动完成再点击确定", "游戏启动中", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                pname = Process.GetProcessesByName("csgo");
             }
 
             Environment.SetEnvironmentVariable("SteamAppId", "730");
@@ -87,30 +88,29 @@ namespace SteamLobbist
                         {
                             SteamUtils.GetImageSize(avatarId, out uint avatarW, out uint avatarH);
                             int bufferSize = (int)(avatarW * avatarH * 4);
-                            byte[] avatarARGB = new byte[bufferSize];
-                            SteamUtils.GetImageRGBA(avatarId, avatarARGB, bufferSize);
-
-                            for (int j = 0; j < bufferSize; j += 4)
+                            if (bufferSize > 0)
                             {
-                                avatarARGB[j + 0] ^= avatarARGB[j + 2];
-                                avatarARGB[j + 2] ^= avatarARGB[j + 0];
-                                avatarARGB[j + 0] ^= avatarARGB[j + 2];
+                                byte[] avatarARGB = new byte[bufferSize];
+                                SteamUtils.GetImageRGBA(avatarId, avatarARGB, bufferSize);
+
+                                for (int j = 0; j < bufferSize; j += 4)
+                                {
+                                    avatarARGB[j + 0] ^= avatarARGB[j + 2];
+                                    avatarARGB[j + 2] ^= avatarARGB[j + 0];
+                                    avatarARGB[j + 0] ^= avatarARGB[j + 2];
+                                }
+
+                                Bitmap avatar = new Bitmap((int)avatarW, (int)avatarH, PixelFormat.Format32bppRgb);
+                                Rectangle BoundsRect = new Rectangle(0, 0, (int)avatarW, (int)avatarH);
+                                BitmapData bmpData = avatar.LockBits(BoundsRect, ImageLockMode.WriteOnly, avatar.PixelFormat);
+
+                                IntPtr ptr = bmpData.Scan0;
+                                Marshal.Copy(avatarARGB, 0, ptr, (int)avatarW * (int)avatarH * 4);
+                                avatar.UnlockBits(bmpData);
+                                imageList.Images.Add(m_Friend.ToString(), avatar);
                             }
-
-                            Bitmap avatar = new Bitmap((int)avatarW, (int)avatarH, PixelFormat.Format32bppRgb);
-                            Rectangle BoundsRect = new Rectangle(0, 0, (int)avatarW, (int)avatarH);
-                            BitmapData bmpData = avatar.LockBits(BoundsRect, ImageLockMode.WriteOnly, avatar.PixelFormat);
-
-                            IntPtr ptr = bmpData.Scan0;
-                            Marshal.Copy(avatarARGB, 0, ptr, (int)avatarW * (int)avatarH * 4);
-                            avatar.UnlockBits(bmpData);
-                            imageList.Images.Add(m_Friend.ToString(), avatar);
                         }
                         // var personaState = SteamFriends.GetFriendRichPresence(m_Friend, "status");
-                    }
-                    else
-                    {
-                        listView1.Items.Add(new ListViewItem(personaName));
                     }
                     listView1.Items.Add(new ListViewItem(personaName, m_Friend.ToString()));
 
