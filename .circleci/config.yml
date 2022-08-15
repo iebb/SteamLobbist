@@ -16,11 +16,13 @@ jobs:
     executor: dotnet3
     steps:
       - checkout
-      - run: |
-          VERSION=${CIRCLE_TAG:=$(git tag).$(date '+%m%d')}
-          mkdir releases
-          echo $VERSION > releases/version.txt
-          dotnet publish -c Release -o ./releases --no-self-contained -p:PublishSingleFile=true /p:AssemblyVersion=${VERSION:=0.0.1}
+      - run:
+          command: |
+            VERSION=${CIRCLE_TAG:=$(git tag).$(date '+%m%d')}
+            mkdir releases
+            echo $VERSION > releases/version.txt
+            dotnet publish -c Release -o ./releases --no-self-contained -p:PublishSingleFile=true /p:AssemblyVersion=${VERSION:=0.0.1}
+          shell: bash.exe
       - persist_to_workspace:
           root: .
           paths:
