@@ -20,9 +20,9 @@ jobs:
           VERSION=${CIRCLE_TAG:=$(git tag).$(date '+%m%d')}
           dotnet publish -c Release -o artifacts --no-self-contained -p:PublishSingleFile=true /p:AssemblyVersion=${VERSION:=0.0.1}
       - persist_to_workspace:
-          root: .
+          root: ./artifacts
           paths:
-            - ./artifacts
+            - ./SteamLobbist.exe
   upload-github:
     executor: go
     steps:
