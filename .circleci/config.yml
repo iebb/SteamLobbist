@@ -5,7 +5,7 @@ version: 2.1
 executors:
   dotnet3:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:latest
+      - image: mcr.microsoft.com/dotnet/sdk:5.0
     environment:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
       NUGET_XMLDOC_MODE: skip
@@ -19,7 +19,7 @@ jobs:
     executor: dotnet3
     steps:
       - checkout
-      - run: VERSION="${CIRCLE_TAG:=$(git tag).$(date '+%m%d')}" dotnet publish -c Release -o artifacts --no-self-contained /p:AssemblyVersion=${VERSION} -p:Version=${VERSION} -p:PublishSingleFile=true
+      - run: dotnet publish -c Release -o artifacts --no-self-contained /p:AssemblyVersion=${CIRCLE_TAG:=$(git tag).$(date '+%m%d')} -p:PublishSingleFile=true
       - persist_to_workspace:
           root: .
           paths:
@@ -30,7 +30,7 @@ jobs:
       - attach_workspace:
           at: ./artifacts
       - run: go get github.com/tcnksm/ghr
-      - run: VERSION="${CIRCLE_TAG:=$(git tag).$(date '+%m%d')}" ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+      - run: ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG:=$(git tag).$(date '+%m%d')} ./artifacts/
       - store_artifacts:
           path: ./artifacts
 
