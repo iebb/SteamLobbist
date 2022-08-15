@@ -8,7 +8,7 @@ executors:
       - image: mcr.microsoft.com/dotnet/sdk:latest
   go:
     docker:
-      - image: circleci/golang
+      - image: cimg/go
 
 
 jobs:
