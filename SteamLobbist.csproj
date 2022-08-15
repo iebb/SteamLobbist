@@ -11,6 +11,7 @@
 	  <Company>$(Authorsd)</Company>
 	  <OutputType>WinExe</OutputType>
 	  <PublishSingleFile>true</PublishSingleFile>
+	  <EnableWindowsTargeting>true</EnableWindowsTargeting>
 	  <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 	  <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
 </PropertyGroup>
