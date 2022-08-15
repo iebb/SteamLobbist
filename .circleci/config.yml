@@ -19,6 +19,7 @@ jobs:
     executor: dotnet3
     steps:
       - checkout
+      - run: VERSION="${CIRCLE_TAG:=$(git tag).$(date '+%m%d')}"
       - run: dotnet publish -c Release -o artifacts --no-self-contained /p:AssemblyVersion=${CIRCLE_TAG} -p:Version=${CIRCLE_TAG} -p:PublishSingleFile=true
       - persist_to_workspace:
           root: .
