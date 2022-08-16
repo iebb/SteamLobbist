@@ -44,20 +44,20 @@ namespace SteamLobbist
 
                 if (result == DialogResult.Yes)
                 {
-                    while (pname.Length == 0)
-                    {
-                        var psi = new ProcessStartInfo();
-                        psi.UseShellExecute = true;
-                        psi.FileName = "steam://rungameid/730";
-                        Process.Start(psi);
+            while (pname.Length == 0)
+            {
+                var psi = new ProcessStartInfo();
+                psi.UseShellExecute = true;
+                psi.FileName = "steam://rungameid/730";
+                Process.Start(psi);
                         MessageBox.Show(
                             "请等待游戏启动完成再确认",
                             "游戏启动中",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Exclamation
                         );
-                        pname = Process.GetProcessesByName("csgo");
-                    }
+                pname = Process.GetProcessesByName("csgo");
+            }
                     Environment.SetEnvironmentVariable("SteamAppId", "730");
                 }
                 else
@@ -198,17 +198,17 @@ namespace SteamLobbist
 
                 if (sameGameMode)
                 {
-                    var current_player_group = SteamFriends.GetFriendRichPresence(SteamUser.GetSteamID(), "steam_player_group");
-                    if (current_player_group == target_player_group)
+                var current_player_group = SteamFriends.GetFriendRichPresence(SteamUser.GetSteamID(), "steam_player_group");
+                if (current_player_group == target_player_group)
+                {
+                    var isWatching = SteamFriends.GetFriendRichPresence(SteamUser.GetSteamID(), "game:act");
+                    if (isWatching != "watch")
                     {
-                        var isWatching = SteamFriends.GetFriendRichPresence(SteamUser.GetSteamID(), "game:act");
-                        if (isWatching != "watch")
-                        {
-                            StopJoin();
-                        }
+                        StopJoin();
+                    }
                         finalized = true;
                         return;
-                    }
+                } 
                     toolStripStatusLabel.Text = "房间: " + target_player_group + " / 当前: " + current_player_group; // resultStr;
                 } else
                 {
@@ -216,23 +216,23 @@ namespace SteamLobbist
                 }
 
 
-                string s = String.Format("{{\"friend_id\":\"{0}\",\"sequenceid\":{1},\"universe\":1,\"message\":\"ShowJoinGameDialog\"}}", targetSteamId.ToString(), sequenceid);
-                byte[] b = Encoding.ASCII.GetBytes(s);
-                await webSocket.SendAsync(b, WebSocketMessageType.Text, true, CancellationToken.None);
-                var buffer = new byte[1024];
-                var resultStr = "";
-                WebSocketReceiveResult result;
-                do
-                {
-                    result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
-                    resultStr += Encoding.ASCII.GetString(buffer, 0, result.Count).Replace("\n", "");
-                }
-                while (!result.EndOfMessage);
-                
+                    string s = String.Format("{{\"friend_id\":\"{0}\",\"sequenceid\":{1},\"universe\":1,\"message\":\"ShowJoinGameDialog\"}}", targetSteamId.ToString(), sequenceid);
+                    byte[] b = Encoding.ASCII.GetBytes(s);
+                    await webSocket.SendAsync(b, WebSocketMessageType.Text, true, CancellationToken.None);
+                    var buffer = new byte[1024];
+                    var resultStr = "";
+                    WebSocketReceiveResult result;
+                    do
+                    {
+                        result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+                        resultStr += Encoding.ASCII.GetString(buffer, 0, result.Count).Replace("\n", "");
+                    }
+                    while (!result.EndOfMessage);
+
                 finalized = true;
                 return;
-            }
-            StopJoin();
+                }
+                StopJoin();
             finalized = true;
         }
 
