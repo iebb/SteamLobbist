@@ -157,6 +157,7 @@ namespace SteamLobbist
             joinButton.Text = "开跟!";
             progressBar.Style = ProgressBarStyle.Blocks;
             isJoining = false;
+            toolStripStatusLabel.IsLink = false;
         }
         void StartJoin()
         {
@@ -241,6 +242,14 @@ namespace SteamLobbist
         private void refreshButton_Click(object sender, EventArgs e)
         {
             LoadFriends();
+        }
+
+        private void toolStripStatusLabel_Click(object sender, EventArgs e)
+        {
+            if (toolStripStatusLabel.Text == "GitHub")
+            {
+                System.Diagnostics.Process.Start("explorer.exe", "https://github.com/iebb/SteamLobbist");
+            }
         }
     }
 }
