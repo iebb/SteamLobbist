@@ -13,7 +13,7 @@ using Steamworks;
 
 namespace SteamLobbist
 {
-    
+
     public partial class MainForm : Form
     {
 
@@ -44,20 +44,20 @@ namespace SteamLobbist
 
                 if (result == DialogResult.Yes)
                 {
-            while (pname.Length == 0)
-            {
-                var psi = new ProcessStartInfo();
-                psi.UseShellExecute = true;
-                psi.FileName = "steam://rungameid/730";
-                Process.Start(psi);
+                    while (pname.Length == 0)
+                    {
+                        var psi = new ProcessStartInfo();
+                        psi.UseShellExecute = true;
+                        psi.FileName = "steam://rungameid/730";
+                        Process.Start(psi);
                         MessageBox.Show(
                             "请等待游戏启动完成再确认",
                             "游戏启动中",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Exclamation
                         );
-                pname = Process.GetProcessesByName("csgo");
-            }
+                        pname = Process.GetProcessesByName("csgo");
+                    }
                     Environment.SetEnvironmentVariable("SteamAppId", "730");
                 }
                 else
@@ -106,7 +106,8 @@ namespace SteamLobbist
                 // EPersonaState personaState = SteamFriends.GetFriendPersonaState(m_Friend);
                 int avatarId = SteamFriends.GetLargeFriendAvatar(m_Friend);
                 SteamFriends.GetFriendGamePlayed(m_Friend, out FriendGameInfo_t gameInfo);
-                if (gameInfo.m_gameID.m_GameID == 730) {
+                if (gameInfo.m_gameID.m_GameID == 730)
+                {
                     if (avatarId != -1)
                     {
                         if (!imageList.Images.ContainsKey(m_Friend.ToString()))
@@ -198,41 +199,42 @@ namespace SteamLobbist
 
                 if (sameGameMode)
                 {
-                var current_player_group = SteamFriends.GetFriendRichPresence(SteamUser.GetSteamID(), "steam_player_group");
-                if (current_player_group == target_player_group)
-                {
-                    var isWatching = SteamFriends.GetFriendRichPresence(SteamUser.GetSteamID(), "game:act");
-                    if (isWatching != "watch")
+                    var current_player_group = SteamFriends.GetFriendRichPresence(SteamUser.GetSteamID(), "steam_player_group");
+                    if (current_player_group == target_player_group)
                     {
-                        StopJoin();
-                    }
+                        var isWatching = SteamFriends.GetFriendRichPresence(SteamUser.GetSteamID(), "game:act");
+                        if (isWatching != "watch")
+                        {
+                            StopJoin();
+                        }
                         finalized = true;
                         return;
-                } 
+                    }
                     toolStripStatusLabel.Text = "房间: " + target_player_group + " / 当前: " + current_player_group; // resultStr;
-                } else
+                }
+                else
                 {
                     toolStripStatusLabel.Text = "检测房间功能未开启，请手动中止";
                 }
 
 
-                    string s = String.Format("{{\"friend_id\":\"{0}\",\"sequenceid\":{1},\"universe\":1,\"message\":\"ShowJoinGameDialog\"}}", targetSteamId.ToString(), sequenceid);
-                    byte[] b = Encoding.ASCII.GetBytes(s);
-                    await webSocket.SendAsync(b, WebSocketMessageType.Text, true, CancellationToken.None);
-                    var buffer = new byte[1024];
-                    var resultStr = "";
-                    WebSocketReceiveResult result;
-                    do
-                    {
-                        result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
-                        resultStr += Encoding.ASCII.GetString(buffer, 0, result.Count).Replace("\n", "");
-                    }
-                    while (!result.EndOfMessage);
+                string s = String.Format("{{\"friend_id\":\"{0}\",\"sequenceid\":{1},\"universe\":1,\"message\":\"ShowJoinGameDialog\"}}", targetSteamId.ToString(), sequenceid);
+                byte[] b = Encoding.ASCII.GetBytes(s);
+                await webSocket.SendAsync(b, WebSocketMessageType.Text, true, CancellationToken.None);
+                var buffer = new byte[1024];
+                var resultStr = "";
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+                    resultStr += Encoding.ASCII.GetString(buffer, 0, result.Count).Replace("\n", "");
+                }
+                while (!result.EndOfMessage);
 
                 finalized = true;
                 return;
-                }
-                StopJoin();
+            }
+            StopJoin();
             finalized = true;
         }
 
