@@ -65,6 +65,9 @@ namespace SteamLobbist
                     Environment.SetEnvironmentVariable("SteamAppId", "740");
                     sameGameMode = false;
                 }
+            } else
+            {
+                Environment.SetEnvironmentVariable("SteamAppId", "730");
             }
 
             //Environment.SetEnvironmentVariable("SteamOverlayGameId", "730");
