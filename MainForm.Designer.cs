@@ -83,8 +83,6 @@
             this.toolStripStatusLabel.IsLink = true;
             this.toolStripStatusLabel.Name = "toolStripStatusLabel";
             this.toolStripStatusLabel.Size = new System.Drawing.Size(48, 18);
-            this.toolStripStatusLabel.Text = "GitHub";
-            this.toolStripStatusLabel.Click += new System.EventHandler(this.toolStripStatusLabel_Click);
             // 
             // progressBar
             // 

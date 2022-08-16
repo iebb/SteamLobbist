@@ -65,6 +65,9 @@ namespace SteamLobbist
                     Environment.SetEnvironmentVariable("SteamAppId", "740");
                     sameGameMode = false;
                 }
+            } else
+            {
+                Environment.SetEnvironmentVariable("SteamAppId", "730");
             }
 
             //Environment.SetEnvironmentVariable("SteamOverlayGameId", "730");
@@ -157,7 +160,6 @@ namespace SteamLobbist
             joinButton.Text = "开跟!";
             progressBar.Style = ProgressBarStyle.Blocks;
             isJoining = false;
-            toolStripStatusLabel.IsLink = false;
         }
         void StartJoin()
         {
@@ -244,12 +246,5 @@ namespace SteamLobbist
             LoadFriends();
         }
 
-        private void toolStripStatusLabel_Click(object sender, EventArgs e)
-        {
-            if (toolStripStatusLabel.Text == "GitHub")
-            {
-                System.Diagnostics.Process.Start("explorer.exe", "https://github.com/iebb/SteamLobbist");
-            }
-        }
     }
 }
